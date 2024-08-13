@@ -501,9 +501,10 @@ class LocalFilesystemAdapterTest extends FilesystemAdapterTestCase
         $this->assertDirectoryExists(static::ROOT . '/public_dir_public_files');
         $this->assertFileHasPermissions(static::ROOT . '/public_dir_public_files', 0755);
 
+        # when creating a directory is it correct to assume directory_visibility has precedence over visibility ?
         $adapter->createDirectory('public_dir_private_files', new Config(['visibility' => 'private', 'directory_visibility' => 'public']));
         $this->assertDirectoryExists(static::ROOT . '/public_dir_private_files');
-        $this->assertFileHasPermissions(static::ROOT . '/public_dir_private_files', 0700); # should this not be 0755 for directory_visibility=public
+        $this->assertFileHasPermissions(static::ROOT . '/public_dir_private_files', 0755); # should this not be 0755 instead of 0700
     }
 
 
@@ -550,7 +551,9 @@ class LocalFilesystemAdapterTest extends FilesystemAdapterTestCase
 
         $adapter->createDirectory('public_dir_private_files', $config = new Config(['visibility' => 'private', 'directory_visibility' => 'public']));
         $this->assertDirectoryExists(static::ROOT . '/public_dir_private_files');
-        $this->assertFileHasPermissions(static::ROOT . '/public_dir_private_files', 0700);  # should this not be 0755 for directory_visibility=public
+
+        # when creating a directory is it correct to assume directory_visibility has precedence over visibility ?
+        $this->assertFileHasPermissions(static::ROOT . '/public_dir_private_files', 0755);
         $adapter->write('/public_dir_private_files/file.txt', 'contents', $config);
         $this->assertFileContains(static::ROOT . '/public_dir_private_files/file.txt', 'contents');
         $this->assertFileHasPermissions(static::ROOT . '/public_dir_private_files/file.txt', 0600);

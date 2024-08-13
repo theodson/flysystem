@@ -352,7 +352,7 @@ class LocalFilesystemAdapter implements FilesystemAdapter, ChecksumProvider
     {
         $this->ensureRootDirectoryExists();
         $location = $this->prefixer->prefixPath($path);
-        $visibility = $config->get(Config::OPTION_VISIBILITY, $config->get(Config::OPTION_DIRECTORY_VISIBILITY));
+        $visibility = $config->get(Config::OPTION_DIRECTORY_VISIBILITY, $config->get(Config::OPTION_VISIBILITY));
         $permissions = $this->resolveDirectoryVisibility($visibility);
 
         if (is_dir($location)) {
