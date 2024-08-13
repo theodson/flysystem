@@ -200,6 +200,18 @@ class LocalFilesystemAdapterTest extends FilesystemAdapterTestCase
         $adapter->write('/file.txt', 'contents', new Config(['visibility' => 'private']));
         $this->assertFileContains(static::ROOT . '/file.txt', 'contents');
         $this->assertFileHasPermissions(static::ROOT . '/file.txt', 0600);
+
+        $adapter->write('/file1.txt', 'contents', new Config(['visibility' => 'public']));
+        $this->assertFileContains(static::ROOT . '/file1.txt', 'contents');
+        $this->assertFileHasPermissions(static::ROOT . '/file1.txt', 0644);
+
+        $adapter->write('/file2.txt', 'contents', new Config(['visibility' => 'private', 'directory_visibility' => 'public']));
+        $this->assertFileContains(static::ROOT . '/file2.txt', 'contents');
+        $this->assertFileHasPermissions(static::ROOT . '/file2.txt', 0600);
+
+        $adapter->write('/file3.txt', 'contents', new Config(['visibility' => 'public', 'directory_visibility' => 'public']));
+        $this->assertFileContains(static::ROOT . '/file3.txt', 'contents');
+        $this->assertFileHasPermissions(static::ROOT . '/file3.txt', 0644);
     }
 
     /**
@@ -480,6 +492,69 @@ class LocalFilesystemAdapterTest extends FilesystemAdapterTestCase
         $adapter->createDirectory('also_private', new Config(['directory_visibility' => 'private']));
         $this->assertDirectoryExists(static::ROOT . '/also_private');
         $this->assertFileHasPermissions(static::ROOT . '/also_private', 0700);
+
+        $adapter->createDirectory('also_public', new Config(['directory_visibility' => 'public']));
+        $this->assertDirectoryExists(static::ROOT . '/also_public');
+        $this->assertFileHasPermissions(static::ROOT . '/also_public', 0755);
+
+        $adapter->createDirectory('public_dir_public_files', new Config(['visibility' => 'public', 'directory_visibility' => 'public']));
+        $this->assertDirectoryExists(static::ROOT . '/public_dir_public_files');
+        $this->assertFileHasPermissions(static::ROOT . '/public_dir_public_files', 0755);
+
+        $adapter->createDirectory('public_dir_private_files', new Config(['visibility' => 'private', 'directory_visibility' => 'public']));
+        $this->assertDirectoryExists(static::ROOT . '/public_dir_private_files');
+        $this->assertFileHasPermissions(static::ROOT . '/public_dir_private_files', 0700); # should this not be 0755 for directory_visibility=public
+    }
+
+
+    /**
+     * @test
+     */
+    public function creating_a_directory_write_a_file(): void
+    {
+        $adapter = new LocalFilesystemAdapter(static::ROOT);
+        $adapter->createDirectory('public', $config = new Config(['visibility' => 'public']));
+        $this->assertDirectoryExists(static::ROOT . '/public');
+        $this->assertFileHasPermissions(static::ROOT . '/public', 0755);
+        $adapter->write('/public/file.txt', 'contents', $config);
+        $this->assertFileContains(static::ROOT . '/public/file.txt', 'contents');
+        $this->assertFileHasPermissions(static::ROOT . '/public/file.txt', 0644);
+
+        $adapter->createDirectory('private', $config = new Config(['visibility' => 'private']));
+        $this->assertDirectoryExists(static::ROOT . '/private');
+        $this->assertFileHasPermissions(static::ROOT . '/private', 0700);
+        $adapter->write('/private/file.txt', 'contents', $config);
+        $this->assertFileContains(static::ROOT . '/private/file.txt', 'contents');
+        $this->assertFileHasPermissions(static::ROOT . '/private/file.txt', 0600);
+
+        $adapter->createDirectory('also_private', $config = new Config(['directory_visibility' => 'private']));
+        $this->assertDirectoryExists(static::ROOT . '/also_private');
+        $this->assertFileHasPermissions(static::ROOT . '/also_private', 0700);
+        $adapter->write('/also_private/file.txt', 'contents', $config);
+        $this->assertFileContains(static::ROOT . '/also_private/file.txt', 'contents');
+        $this->assertFileHasPermissions(static::ROOT . '/also_private/file.txt', 0644);
+
+        $adapter->createDirectory('also_public', $config = new Config(['directory_visibility' => 'public']));
+        $this->assertDirectoryExists(static::ROOT . '/also_public');
+        $this->assertFileHasPermissions(static::ROOT . '/also_public', 0755);
+        $adapter->write('/also_public/file.txt', 'contents', $config);
+        $this->assertFileContains(static::ROOT . '/also_public/file.txt', 'contents');
+        $this->assertFileHasPermissions(static::ROOT . '/also_public/file.txt', 0644);
+
+        $adapter->createDirectory('public_dir_public_files', $config = new Config(['visibility' => 'public', 'directory_visibility' => 'public']));
+        $this->assertDirectoryExists(static::ROOT . '/public_dir_public_files');
+        $this->assertFileHasPermissions(static::ROOT . '/public_dir_public_files', 0755);
+        $adapter->write('/public_dir_public_files/file.txt', 'contents', $config);
+        $this->assertFileContains(static::ROOT . '/public_dir_public_files/file.txt', 'contents');
+        $this->assertFileHasPermissions(static::ROOT . '/public_dir_public_files/file.txt', 0644);
+
+        $adapter->createDirectory('public_dir_private_files', $config = new Config(['visibility' => 'private', 'directory_visibility' => 'public']));
+        $this->assertDirectoryExists(static::ROOT . '/public_dir_private_files');
+        $this->assertFileHasPermissions(static::ROOT . '/public_dir_private_files', 0700);  # should this not be 0755 for directory_visibility=public
+        $adapter->write('/public_dir_private_files/file.txt', 'contents', $config);
+        $this->assertFileContains(static::ROOT . '/public_dir_private_files/file.txt', 'contents');
+        $this->assertFileHasPermissions(static::ROOT . '/public_dir_private_files/file.txt', 0600);
+
     }
 
     /**
